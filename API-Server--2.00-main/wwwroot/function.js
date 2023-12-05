@@ -94,7 +94,7 @@ waitingImage="images/Loading_icon.gif">
 
 function createProfil(profil)
 {
-    
+    profil.Id = 0;
     AccountsController.register(profil);
    // {"Id": 0, "Name": "...", "Email": "...", "Password": "..."}
 }
