@@ -1,7 +1,9 @@
+//import validation from '.validation';
+
 let contentScrollPosition = 0;
-let loggedUser = API.retrieveLoggedUser();
-let connected = true;
-let isAdmin = true;
+let loggedUser = getLoggedUser()
+let connected = true;/////
+let isAdmin = true;/////
 if (loggedUser == undefined) {
     loggedUser = {};
     loggedUser.Id = 0;
@@ -9,6 +11,20 @@ if (loggedUser == undefined) {
     loginMessage = "login puceau";
     EmailError = "ton email est retard";
     passwordError = "ton password est retard";
+}
+else
+{
+    loginMessage = "a get logged user mais surment null";
+    Email = "puceau@blbabla.com";
+    EmailError = "ton email est retard";
+    passwordError = "ton password est retard";
+}
+
+
+
+async function getLoggedUser()
+{
+    return await API.retrieveLoggedUser();
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -28,11 +44,12 @@ function restoreContentScrollPosition() {
 }
 let currentPage = "";
 function UpdateHeader(viewtitle, page) {
+    $("#header").empty();
     currentPage = page;
-    function dropDownMenu(){
+    function dropDownMenu() {
         //let connected = true;
-        if(connected){
-            if(isAdmin){
+        if (connected) {
+            if (isAdmin) {
                 return `<div class="dropdown ms-auto dropdownLayout">
                 <div data-bs-toggle="dropdown" aria-expanded="false">
                 <i class="cmdIcon fa fa-ellipsis-vertical"></i>
@@ -181,7 +198,11 @@ function renderAbout() {
 $(() => {
     //renderAbout();
     //renderSite();
-    renderLoginForm();
+
+
+
+   renderLoginForm();
+  
 
 
 });
@@ -294,7 +315,7 @@ waitingImage="images/Loading_icon.gif">
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        register(profil); // commander la création au service API
+        API.register(profil); // commander la création au service API
     });
 }
 
@@ -385,7 +406,7 @@ function renderEditProfil() {
     $('#editCmd').on('click', renderLoginForm); // call back sur clic
     initFormValidation();
     initImageUploaders();
-    $('#abortCmd').on('click', renderLoginForm); // call back sur clic
+    $('#abortCmd').on('click', renderSite); // call back sur clic
     // ajouter le mécanisme de vérification de doublon de courriel
     addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
     // call back la soumission du formulaire
@@ -395,7 +416,7 @@ function renderEditProfil() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        modifyUserProfil(profil); // commander la création au service API
+        API.modifyUserProfil(profil); // commander la création au service API
     });
 }
 ;
@@ -445,7 +466,7 @@ function renderLoginForm() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        login(profil.Email, profil.matchedPassword); // commander la création au service API
+        API.login(profil.Email, profil.matchedPassword); // commander la création au service API
     });
 }
 

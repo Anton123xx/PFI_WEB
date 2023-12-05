@@ -29,7 +29,7 @@ class API {
     static storeLoggedUser(user) {
         sessionStorage.setItem('user', JSON.stringify(user));
     }
-    static retrieveLoggedUser() {
+    static async retrieveLoggedUser() {
         let user = JSON.parse(sessionStorage.getItem('user'));
         return user;
     }
