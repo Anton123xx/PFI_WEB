@@ -1,4 +1,16 @@
 let contentScrollPosition = 0;
+let loggedUser = API.retrieveLoggedUser();
+let connected = true;
+let isAdmin = true;
+if (loggedUser == undefined) {
+    loggedUser = {};
+    loggedUser.Id = 0;
+    Email = "puceau@blbabla.com";
+    loginMessage = "login puceau";
+    EmailError = "ton email est retard";
+    passwordError = "ton password est retard";
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Views rendering
 function showWaitingGif() {
@@ -17,7 +29,129 @@ function restoreContentScrollPosition() {
 let currentPage = "";
 function UpdateHeader(viewtitle, page) {
     currentPage = page;
-    $("#header").html("bonjour");
+    function dropDownMenu(){
+        //let connected = true;
+        if(connected){
+            if(isAdmin){
+                return `<div class="dropdown ms-auto dropdownLayout">
+                <div data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="cmdIcon fa fa-ellipsis-vertical"></i>
+                </div>
+                <div class="dropdown-menu noselect">
+                <span class="dropdown-item" id="manageUserCm">
+                <i class="menuIcon fas fa-user-cog mx-2"></i>
+                Gestion des usagers
+                </span>
+                <div class="dropdown-divider"></div>
+                <span class="dropdown-item" id="logoutCmd">
+                <i class="menuIcon fa fa-sign-out mx-2"></i>
+                Déconnexion
+                </span>
+                <span class="dropdown-item" id="editProfilMenuCmd">
+                <i class="menuIcon fa fa-user-edit mx-2"></i>
+                Modifier votre profil
+                </span>
+                <div class="dropdown-divider"></div>
+                <span class="dropdown-item" id="listPhotosMenuCmd">
+                <i class="menuIcon fa fa-image mx-2"></i>
+                Liste des photos
+                </span>
+                <div class="dropdown-divider"></div>
+                <span class="dropdown-item" id="sortByDateCmd">
+                <i class="menuIcon fa fa-check mx-2"></i>
+                <i class="menuIcon fa fa-calendar mx-2"></i>
+                Photos par date de création
+                </span>
+                <span class="dropdown-item" id="sortByOwnersCmd">
+                <i class="menuIcon fa fa-fw mx-2"></i>
+                <i class="menuIcon fa fa-users mx-2"></i>
+                Photos par créateur
+                </span>
+                <span class="dropdown-item" id="sortByLikesCmd">
+                <i class="menuIcon fa fa-fw mx-2"></i>
+                <i class="menuIcon fa fa-user mx-2"></i>
+                Photos les plus aiméés
+                </span>
+                <span class="dropdown-item" id="ownerOnlyCmd">
+                <i class="menuIcon fa fa-fw mx-2"></i>
+                <i class="menuIcon fa fa-user mx-2"></i>
+                Mes photos
+                </span>
+                <div class="dropdown-divider"></div>
+                <span class="dropdown-item" id="aboutCmd">
+                <i class="menuIcon fa fa-info-circle mx-2"></i>
+                À propos...
+                </span>
+                </div>
+                </div>`;
+            }
+            return `<div class="dropdown ms-auto dropdownLayout">
+            <div data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="cmdIcon fa fa-ellipsis-vertical"></i>
+            </div>
+            <div class="dropdown-menu noselect">
+           
+            <span class="dropdown-item" id="logoutCmd">
+            <i class="menuIcon fa fa-sign-out mx-2"></i>
+            Déconnexion
+            </span>
+            <span class="dropdown-item" id="editProfilMenuCmd">
+            <i class="menuIcon fa fa-user-edit mx-2"></i>
+            Modifier votre profil
+            </span>
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item" id="listPhotosMenuCmd">
+            <i class="menuIcon fa fa-image mx-2"></i>
+            Liste des photos
+            </span>
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item" id="sortByDateCmd">
+            <i class="menuIcon fa fa-check mx-2"></i>
+            <i class="menuIcon fa fa-calendar mx-2"></i>
+            Photos par date de création
+            </span>
+            <span class="dropdown-item" id="sortByOwnersCmd">
+            <i class="menuIcon fa fa-fw mx-2"></i>
+            <i class="menuIcon fa fa-users mx-2"></i>
+            Photos par créateur
+            </span>
+            <span class="dropdown-item" id="sortByLikesCmd">
+            <i class="menuIcon fa fa-fw mx-2"></i>
+            <i class="menuIcon fa fa-user mx-2"></i>
+            Photos les plus aiméés
+            </span>
+            <span class="dropdown-item" id="ownerOnlyCmd">
+            <i class="menuIcon fa fa-fw mx-2"></i>
+            <i class="menuIcon fa fa-user mx-2"></i>
+            Mes photos
+            </span>
+            <div class="dropdown-divider"></div>
+            <span class="dropdown-item" id="aboutCmd">
+            <i class="menuIcon fa fa-info-circle mx-2"></i>
+            À propos...
+            </span>
+            </div>
+            </div>`;
+
+        } else {
+            return ``;
+        }
+    }
+    $("#header").html(`<span title="Liste des photos" id="listPhotosCmd">
+    <img src="images/PhotoCloudLogo.png" class="appLogo">
+     </span>
+    <span class="viewTitle">${viewtitle}
+    <div class="cmdIcon fa fa-plus" id="newPhotoCmd" title="Ajouter une photo"></div>
+    </span>
+    <div class="headerMenusContainer">
+    <span>&nbsp;</span> <!--filler-->
+
+    <div class="dropdown ms-auto dropdownLayout">
+    <!-- Articles de menu -->
+    ${dropDownMenu()}
+    </div>
+    </div>
+    `);
 }
 function renderAbout() {
     timeout();
@@ -45,12 +179,15 @@ function renderAbout() {
 }
 
 $(() => {
-    renderAbout();
+    //renderAbout();
+    //renderSite();
+    renderLoginForm();
+
+
 });
 
 
-function renderSite()
-{
+function renderSite() {
     UpdateHeader("Liste de photo", "photos");
     $("#content").append(`<span title="Liste des photos" id="listPhotosCmd">
     <img src="images/PhotoCloudLogo.png" class="appLogo">
@@ -157,7 +294,7 @@ waitingImage="images/Loading_icon.gif">
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        createProfil(profil); // commander la création au service API
+        register(profil); // commander la création au service API
     });
 }
 
@@ -258,10 +395,10 @@ function renderEditProfil() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        editProfil(profil); // commander la création au service API
+        modifyUserProfil(profil); // commander la création au service API
     });
 }
-
+;
 
 
 function renderLoginForm() {
@@ -308,32 +445,12 @@ function renderLoginForm() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        login(profil); // commander la création au service API
+        login(profil.Email, profil.matchedPassword); // commander la création au service API
     });
 }
 
 
-function login(profil) {
-    //TokensManager.login(profil);
-    AccountsController.login(profil);
-}
 
 
-function logout(profil) {
-    //TokensManager.login(profil);
-    AccountsController.logout(profil);
-}
 
-function createProfil(profil) {
-    profil.Id = 0;
-    AccountsController.register(profil);
-    // {"Id": 0, "Name": "...", "Email": "...", "Password": "..."}
-}
 
-function editProfil() {
-    AccountsController.modify(profil);
-}
-
-function deleteProfil() {
-    AccountsController.deleteProfil(profil);
-}
