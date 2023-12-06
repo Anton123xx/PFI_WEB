@@ -122,11 +122,13 @@ class API {
                 contentType: 'application/json',
                 headers: API.getBearerAuthorizationToken(),
                 data: JSON.stringify(profil),
+
                 success: (profil) => {
                     API.storeLoggedUser(profil);
                     resolve(profil);
                 },
-                error: xhr => { API.setHttpErrorState(xhr); resolve(false); }
+                error: xhr => {API.setHttpErrorState(xhr); resolve(false); }
+                
             });
         });
     }

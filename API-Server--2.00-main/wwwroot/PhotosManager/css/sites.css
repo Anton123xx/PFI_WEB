@@ -97,6 +97,14 @@
     cursor: pointer;
 }
 
+.avatar {
+    border-radius: 50%;
+    height: 40px;
+    margin-right: 10px;
+    text-align: center;
+    margin: 0px;
+}
+
 .menuIcon {
     -webkit-text-fill-color: rgb(0, 87, 204);
     width:20px;
@@ -245,6 +253,10 @@ legend {
     grid-template-columns: 25px auto !important;
 }
 
-div2{
+.div2{
     border: 1px solid red;
+}
+
+div .espace{
+    margin: 20px;
 }

@@ -3,9 +3,9 @@
 
 let loggedUser = JSON.parse(sessionStorage.getItem("user"));
 let contentScrollPosition = 0;
-
+let loginMessage = "";
 let connected = false;/////
-let isAdmin = true;/////
+let isAdmin = false;/////
 
 console.log(loggedUser);
 
@@ -31,7 +31,7 @@ async function getLoggedUser()
     return await API.retrieveLoggedUser();
 }
 
-checkAuthorizations();
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Views rendering
@@ -160,21 +160,40 @@ function UpdateHeader(viewtitle, page) {
             return ``;
         }
     }
-    $("#header").html(`<span title="Liste des photos" id="listPhotosCmd">
-    <img src="images/PhotoCloudLogo.png" class="appLogo">
-     </span>
-    <span class="viewTitle">${viewtitle}
-    <div class="cmdIcon fa fa-plus" id="newPhotoCmd" title="Ajouter une photo"></div>
-    </span>
-    <div class="headerMenusContainer">
-    <span>&nbsp;</span> <!--filler-->
-
-    <div class="dropdown ms-auto dropdownLayout">
-    <!-- Articles de menu -->
-    ${dropDownMenu()}
-    </div>
-    </div>
-    `);
+    if(connected){
+        $("#header").html(`<span title="Liste des photos" id="listPhotosCmd">
+        <img src="images/PhotoCloudLogo.png" class="appLogo">
+         </span>
+        <span class="viewTitle">${viewtitle}
+        <div class="cmdIcon fa fa-plus" id="newPhotoCmd" title="Ajouter une photo"></div>
+        </span>
+        <div class="headerMenusContainer">
+        <span>&nbsp;</span> <!--filler-->
+        
+        <img class="avatar" alt="Avatar" src="${loggedUser.Avatar }">
+        <div class="dropdown ms-auto dropdownLayout">
+        <!-- Articles de menu -->
+        ${dropDownMenu()}
+        </div>
+        </div>
+        `);
+    }else{
+        $("#header").html(`<span title="Liste des photos" id="listPhotosCmd">
+        <img src="images/PhotoCloudLogo.png" class="appLogo">
+         </span>
+        <span class="viewTitle">${viewtitle}
+        <div class="cmdIcon fa fa-plus" id="newPhotoCmd" title="Ajouter une photo"></div>
+        </span>
+        <div class="headerMenusContainer">
+        <span>&nbsp;</span> <!--filler-->
+        <div class="dropdown ms-auto dropdownLayout">
+        <!-- Articles de menu -->
+        ${dropDownMenu()}
+        </div>
+        </div>
+        `);
+    }
+   
     if(loggedUser !== undefined || loggedUser !== null){
         $('#editProfilMenuCmd').on("click",renderEditProfil);
         $('#logoutCmd').on("click", function(event){
@@ -409,15 +428,15 @@ function renderEditProfil() {
     <button class="form-control btn-secondary" id="abortCmd">Annuler</button>
     </div>
     <div class="cancel"> <hr>
-    <a href="confirmDeleteProfil.php">
-    <button class="form-control btn-warning">Effacer le compte</button>
+    <button class="form-control btn-warning" id="effacerCompte">Effacer le compte</button>
     </a>
     </div>
     `);
-    $('#editCmd').on('click', renderLoginForm); // call back sur clic
     initFormValidation();
     initImageUploaders();
     $('#abortCmd').on('click', renderSite); // call back sur clic
+
+    $('#effacerCompte').on('click', renderConfirmationRetraitDeCompte); // call back sur clic
     // ajouter le mécanisme de vérification de doublon de courriel
     addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
     // call back la soumission du formulaire
@@ -427,9 +446,7 @@ function renderEditProfil() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-
-        console.log(profil);
-        //API.modifyUserProfil(profil); // commander la création au service API
+        API.modifyUserProfil(profil); // commander la création au service API
     });
 
     
@@ -438,56 +455,98 @@ function renderEditProfil() {
 
 
 function renderLoginForm() {
-    loggedUser = RecheckLoggedUser();
-    console.log(loggedUser);
-    if(connected){
-        loginMessage = loggedUser.Name;
+    if(!connected){
+        loggedUser = RecheckLoggedUser();
+        console.log(loggedUser);
+        if(loginMessage == ""){
+            if(connected){
+                loginMessage = loggedUser.Name;
+            }else{
+                loginMessage = "";
+            }
+        }
+    
+        noTimeout(); // ne pas limiter le temps d’inactivité
+        eraseContent(); // effacer le conteneur #content
+        UpdateHeader("Connexion", "login"); // mettre à jour l’entête et menu
+        $("#newPhotoCmd").hide(); // camouffler l’icone de commande d’ajout de photo
+        $("#content").append(`
+        <h3>${loginMessage}</h3>
+        <form class="form" id="loginForm">
+        <input type='email'
+        name='Email'
+        class="form-control"
+        required
+        RequireMessage = 'Veuillez entrer votre courriel'
+        InvalidMessage = 'Courriel invalide'
+        placeholder="adresse de courriel"
+        value='${Email}'>
+        <span style='color:red'>${EmailError}</span>
+        <input type='password'
+        name='Password'
+        placeholder='Mot de passe'
+        class="form-control"
+        required
+        RequireMessage = 'Veuillez entrer votre mot de passe'>
+        <span style='color:red'>${passwordError}</span>
+        <input type='submit' name='submit' value="Entrer" class="form-control btn-primary">
+        </form>
+        <div class="form">
+        <hr>
+        <button class="form-control btn-info" id="createProfilCmd">Nouveau compte</button>
+        </div>
+        `);
+        $('#createProfilCmd').on('click', renderCreateProfil); // call back sur clic
+        initFormValidation();
+        initImageUploaders();
+        $('#abortCmd').on('click', renderLoginForm); // call back sur clic
+        // ajouter le mécanisme de vérification de doublon de courriel
+        addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
+        // call back la soumission du formulaire
+        $('#loginForm').on("submit", function (event) {
+            let profil = getFormData($('#loginForm'));
+            event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
+            showWaitingGif(); // afficher GIF d’attente
+            API.login(profil.Email,profil.Password); // commander la création au service API
+            connected = true;
+        });
     }else{
-        loginMessage = "";
+        renderSite();
     }
+    
+}
+
+function renderConfirmationRetraitDeCompte() {
+    loggedUser = RecheckLoggedUser();
+    let message = "Voulez-vous vraiment effacer votre compte?"
 
     noTimeout(); // ne pas limiter le temps d’inactivité
     eraseContent(); // effacer le conteneur #content
     UpdateHeader("Connexion", "login"); // mettre à jour l’entête et menu
     $("#newPhotoCmd").hide(); // camouffler l’icone de commande d’ajout de photo
     $("#content").append(`
-    <h3>${loginMessage}</h3>
-    <form class="form" id="loginForm">
-    <input type='email'
-    name='Email'
-    class="form-control"
-    required
-    RequireMessage = 'Veuillez entrer votre courriel'
-    InvalidMessage = 'Courriel invalide'
-    placeholder="adresse de courriel"
-    value='${Email}'>
-    <span style='color:red'>${EmailError}</span>
-    <input type='password'
-    name='Password'
-    placeholder='Mot de passe'
-    class="form-control"
-    required
-    RequireMessage = 'Veuillez entrer votre mot de passe'>
-    <span style='color:red'>${passwordError}</span>
-    <input type='submit' name='submit' value="Entrer" class="form-control btn-primary">
-    </form>
-    <div class="form">
-    <hr>
-    <button class="form-control btn-info" id="createProfilCmd">Nouveau compte</button>
+    <h3>${message}</h3>
+    <div class="cancel">
+    <button class="form-control btn-secondary" style="background-color: red;border: none;height: 70px;" id="delete">Effacer mon compte</button>
+    </div>
+    <div class="espace"></div>
+    <div class="cancel">
+    <button class="form-control btn-secondary" id="abortCmd">Annuler</button>
     </div>
     `);
-    $('#createProfilCmd').on('click', renderCreateProfil); // call back sur clic
     initFormValidation();
     initImageUploaders();
-    $('#abortCmd').on('click', renderLoginForm); // call back sur clic
+    $('#abortCmd').on('click', renderEditProfil); // call back sur clic
     // ajouter le mécanisme de vérification de doublon de courriel
     addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
     // call back la soumission du formulaire
-    $('#loginForm').on("submit", function (event) {
-        let profil = getFormData($('#loginForm'));
+    
+    $('#delete').on('click', function(event){
+        API.unsubscribeAccount(loggedUser.Id);
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        API.login(profil.Email,profil.Password); // commander la création au service API
+        API.logout();
+        connected = false;
     });
 }
 
@@ -502,15 +561,20 @@ function getFormData($form) {
 
 function checkAuthorizations(){
 
-    if(loggedUser !== undefined || loggedUser !== null){
+    loggedUser = RecheckLoggedUser();
+    if(loggedUser !== undefined && loggedUser !== null){
         if(connected){
+
+            if(loggedUser.Authorizations.readAccess === 2 && loggedUser.Authorizations.writeAccess === 2){
+                isAdmin = true;
+                connected = true;
+            }
             if(loggedUser.Authorizations.readAccess === 1 && loggedUser.Authorizations.writeAccess === 1){
                 isAdmin = false;
                 connected = true;
-            }else if(loggedUser.Authorizations.readAccess === 2 && loggedUser.Authorizations.writeAccess === 2){
-                isAdmin = true;
-                connected = true;
-            }else if(loggedUser.Authorizations.readAccess === 0 && loggedUser.Authorizations.writeAccess === 0){
+            }
+            
+            if(loggedUser.Authorizations.readAccess === 0 && loggedUser.Authorizations.writeAccess === 0){
                 connected = false;
                 isAdmin = false;
             }
