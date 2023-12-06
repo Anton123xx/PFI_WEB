@@ -1,10 +1,12 @@
 //import validation from '.validation';
 
+
 let contentScrollPosition = 0;
-let loggedUser = getLoggedUser()
+let loggedUser = JSON.parse(sessionStorage.getItem("user"));
 let connected = true;/////
 let isAdmin = true;/////
-if (loggedUser == undefined || loggedUser !== null) {
+
+if (loggedUser == undefined || loggedUser === null) {
     loggedUser = {};
     loggedUser.Id = 0;
     Email = "";
@@ -14,18 +16,19 @@ if (loggedUser == undefined || loggedUser !== null) {
 }
 else
 {
-    loginMessage = loggedUser.object;
+    loginMessage = loggedUser.Name;
     Email = "";
-    EmailError = "ton email est retard";
+    EmailError = "connecter";
     passwordError = "ton password est retard";
 }
-
 
 
 async function getLoggedUser()
 {
     return await API.retrieveLoggedUser();
 }
+
+//checkAuthorizations();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Views rendering
@@ -149,7 +152,6 @@ function UpdateHeader(viewtitle, page) {
             </span>
             </div>
             </div>`;
-
         } else {
             return ``;
         }
@@ -169,6 +171,13 @@ function UpdateHeader(viewtitle, page) {
     </div>
     </div>
     `);
+    if(loggedUser !== undefined || loggedUser !== null){
+        $('#editProfilMenuCmd').on("click",renderEditProfil);
+        $('#logoutCmd').on("click", API.logout());
+    }
+
+    
+    
 }
 function renderAbout() {
     timeout();
@@ -321,6 +330,7 @@ waitingImage="images/Loading_icon.gif">
 
 
 function renderEditProfil() {
+    let loggedUser = JSON.parse(sessionStorage.getItem("user"));
     noTimeout(); // ne pas limiter le temps d’inactivité
     eraseContent(); // effacer le conteneur #content
     UpdateHeader("Inscription", "editProfil"); // mettre à jour l’entête et menu
@@ -416,8 +426,12 @@ function renderEditProfil() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        API.modifyUserProfil(profil); // commander la création au service API
+
+        console.log(profil);
+        //API.modifyUserProfil(profil); // commander la création au service API
     });
+
+    
 }
 ;
 
@@ -462,11 +476,9 @@ function renderLoginForm() {
     // call back la soumission du formulaire
     $('#loginForm').on("submit", function (event) {
         let profil = getFormData($('#loginForm'));
-        delete profil.matchedPassword;
-        delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        API.login(profil); // commander la création au service API
+        API.login(profil.Email,profil.Password); // commander la création au service API
     });
 }
 
@@ -477,6 +489,22 @@ function getFormData($form) {
         jsonObject[control.name] = control.value.replace(removeTag, "");
     });
     return jsonObject;
+}
+
+function checkAuthorizations(){
+
+    if(loggedUser !== undefined || loggedUser !== null){
+        if(loggedUser.Authorizations.readAccess === 1 && loggedUser.Authorizations.writeAccess === 1){
+            isAdmin = false;
+            connected = true;
+        }else if(loggedUser.Authorizations.readAccess === 2 && loggedUser.Authorizations.writeAccess === 2){
+            isAdmin = true;
+            connected = true;
+        }else if(loggedUser.Authorizations.readAccess === 0 && loggedUser.Authorizations.writeAccess === 0){
+            connected = false;
+            isAdmin = false;
+        }
+    }
 }
 
 

@@ -26,9 +26,11 @@ export default class AccountsController extends Controller {
     }
     // POST: /token body payload[{"Email": "...", "Password": "..."}]
     login(loginInfo) {
+        console.log(loginInfo);
         if (loginInfo) {
             if (this.repository != null) {
                 let user = this.repository.findByField("Email", loginInfo.Email);
+                console.log(user);
                 if (user != null) {
                     if (user.Password == loginInfo.Password) {
                         user = this.repository.get(user.Id);
@@ -118,6 +120,8 @@ export default class AccountsController extends Controller {
             user.VerifyCode = verifyCode;
             user.Authorizations = Authorizations.user();
             let newUser = this.repository.add(user);
+
+            console.log(newUser);
             if (this.repository.model.state.isValid) {
                 this.HttpContext.response.created(newUser);
                 newUser.Verifycode = verifyCode;
@@ -147,7 +151,9 @@ export default class AccountsController extends Controller {
                         user.VerifyCode = utilities.makeVerifyCode(6);
                         this.sendVerificationEmail(user);
                     }
+
                     let updatedUser = this.repository.update(user.Id, user);
+
                     if (this.repository.model.state.isValid) {
                         this.HttpContext.response.updated(updatedUser);
                     }

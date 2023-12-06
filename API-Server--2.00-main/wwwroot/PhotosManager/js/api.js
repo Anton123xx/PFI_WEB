@@ -31,6 +31,7 @@ class API {
     }
     static async retrieveLoggedUser() {
         let user = JSON.parse(sessionStorage.getItem('user'));
+
         return user;
     }
     static eraseLoggedUser() {
