@@ -1,10 +1,13 @@
 //import validation from '.validation';
 
 
-let contentScrollPosition = 0;
 let loggedUser = JSON.parse(sessionStorage.getItem("user"));
-let connected = true;/////
+let contentScrollPosition = 0;
+
+let connected = false;/////
 let isAdmin = true;/////
+
+console.log(loggedUser);
 
 if (loggedUser == undefined || loggedUser === null) {
     loggedUser = {};
@@ -16,10 +19,10 @@ if (loggedUser == undefined || loggedUser === null) {
 }
 else
 {
-    loginMessage = loggedUser.Name;
     Email = "";
     EmailError = "connecter";
     passwordError = "ton password est retard";
+    connected = true;
 }
 
 
@@ -28,7 +31,7 @@ async function getLoggedUser()
     return await API.retrieveLoggedUser();
 }
 
-//checkAuthorizations();
+checkAuthorizations();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Views rendering
@@ -47,6 +50,7 @@ function restoreContentScrollPosition() {
 }
 let currentPage = "";
 function UpdateHeader(viewtitle, page) {
+    checkAuthorizations();
     $("#header").empty();
     currentPage = page;
     function dropDownMenu() {
@@ -173,7 +177,15 @@ function UpdateHeader(viewtitle, page) {
     `);
     if(loggedUser !== undefined || loggedUser !== null){
         $('#editProfilMenuCmd').on("click",renderEditProfil);
-        $('#logoutCmd').on("click", API.logout());
+        $('#logoutCmd').on("click", function(event){
+            connected = false;
+            isAdmin = false;
+            event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
+            API.logout(); // commander la création au service API
+            renderLoginForm();
+            loggedUser = undefined;
+            
+        });
     }
 
     
@@ -218,12 +230,16 @@ $(() => {
 
 
 function renderSite() {
+    loggedUser = RecheckLoggedUser();
+    eraseContent(); // effacer le conteneur #content
     UpdateHeader("Liste de photo", "photos");
-    
+    $("#newPhotoCmd").hide(); // camouffler l’icone de commande d’ajout de photo
+    $("#content").append('');
 }
 
 
 function renderCreateProfil() {
+    loggedUser = RecheckLoggedUser();
     noTimeout(); // ne pas limiter le temps d’inactivité
     eraseContent(); // effacer le conteneur #content
     UpdateHeader("Inscription", "createProfil"); // mettre à jour l’entête et menu
@@ -314,7 +330,8 @@ waitingImage="images/Loading_icon.gif">
 
 
 function renderEditProfil() {
-    let loggedUser = JSON.parse(sessionStorage.getItem("user"));
+    loggedUser = RecheckLoggedUser();
+    loggedUser = JSON.parse(sessionStorage.getItem("user"));
     noTimeout(); // ne pas limiter le temps d’inactivité
     eraseContent(); // effacer le conteneur #content
     UpdateHeader("Inscription", "editProfil"); // mettre à jour l’entête et menu
@@ -421,6 +438,14 @@ function renderEditProfil() {
 
 
 function renderLoginForm() {
+    loggedUser = RecheckLoggedUser();
+    console.log(loggedUser);
+    if(connected){
+        loginMessage = loggedUser.Name;
+    }else{
+        loginMessage = "";
+    }
+
     noTimeout(); // ne pas limiter le temps d’inactivité
     eraseContent(); // effacer le conteneur #content
     UpdateHeader("Connexion", "login"); // mettre à jour l’entête et menu
@@ -478,19 +503,24 @@ function getFormData($form) {
 function checkAuthorizations(){
 
     if(loggedUser !== undefined || loggedUser !== null){
-        if(loggedUser.Authorizations.readAccess === 1 && loggedUser.Authorizations.writeAccess === 1){
-            isAdmin = false;
-            connected = true;
-        }else if(loggedUser.Authorizations.readAccess === 2 && loggedUser.Authorizations.writeAccess === 2){
-            isAdmin = true;
-            connected = true;
-        }else if(loggedUser.Authorizations.readAccess === 0 && loggedUser.Authorizations.writeAccess === 0){
-            connected = false;
-            isAdmin = false;
+        if(connected){
+            if(loggedUser.Authorizations.readAccess === 1 && loggedUser.Authorizations.writeAccess === 1){
+                isAdmin = false;
+                connected = true;
+            }else if(loggedUser.Authorizations.readAccess === 2 && loggedUser.Authorizations.writeAccess === 2){
+                isAdmin = true;
+                connected = true;
+            }else if(loggedUser.Authorizations.readAccess === 0 && loggedUser.Authorizations.writeAccess === 0){
+                connected = false;
+                isAdmin = false;
+            }
         }
     }
 }
 
+function RecheckLoggedUser(){
+    return JSON.parse(sessionStorage.getItem("user"));
+}
 
 
 
