@@ -4,18 +4,18 @@ let contentScrollPosition = 0;
 let loggedUser = getLoggedUser()
 let connected = true;/////
 let isAdmin = true;/////
-if (loggedUser == undefined) {
+if (loggedUser == undefined || loggedUser !== null) {
     loggedUser = {};
     loggedUser.Id = 0;
-    Email = "puceau@blbabla.com";
+    Email = "";
     loginMessage = "login puceau";
-    EmailError = "ton email est retard";
-    passwordError = "ton password est retard";
+    EmailError = "Vous devez mettre un email";
+    passwordError = "Vous devez mettre un password";
 }
 else
 {
-    loginMessage = "a get logged user mais surment null";
-    Email = "puceau@blbabla.com";
+    loginMessage = loggedUser.object;
+    Email = "";
     EmailError = "ton email est retard";
     passwordError = "ton password est retard";
 }
@@ -466,8 +466,17 @@ function renderLoginForm() {
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-        API.login(profil.Email, profil.matchedPassword); // commander la création au service API
+        API.login(profil); // commander la création au service API
     });
+}
+
+function getFormData($form) {
+    const removeTag = new RegExp("(<[a-zA-Z0-9]+>)|(</[a-zA-Z0-9]+>)", "g");
+    var jsonObject = {};
+    $.each($form.serializeArray(), (index, control) => {
+        jsonObject[control.name] = control.value.replace(removeTag, "");
+    });
+    return jsonObject;
 }
 
 
