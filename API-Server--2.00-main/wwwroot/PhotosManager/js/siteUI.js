@@ -506,11 +506,11 @@ function renderLoginForm() {
         $('#loginForm').on("submit", function (event) {
             let profil = getFormData($('#loginForm'));
             event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
-             
-
-            if(API.login(profil.Email,profil.Password) != undefined)
+            showWaitingGif();
+            let result = API.login(profil.Email,profil.Password)
+            if( result != null)
             {
-                showWaitingGif();
+                
                 connected = true;
             } 
             else
@@ -518,12 +518,16 @@ function renderLoginForm() {
                 if(API.currentStatus == 481)
                 {
                    EmailError = "faekfmael";
+                   renderLoginForm();
                 }
 
                 if(API.currentStatus == 482)
                 {
                     passwordError = "fekamfol";
+                    renderLoginForm();
                 }
+
+                
             }
            
         });
