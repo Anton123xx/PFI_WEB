@@ -506,9 +506,26 @@ function renderLoginForm() {
         $('#loginForm').on("submit", function (event) {
             let profil = getFormData($('#loginForm'));
             event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
-            showWaitingGif(); // afficher GIF d’attente
-            API.login(profil.Email,profil.Password); // commander la création au service API
-            connected = true;
+             
+
+            if(API.login(profil.Email,profil.Password) != undefined)
+            {
+                showWaitingGif();
+                connected = true;
+            } 
+            else
+            {
+                if(API.currentStatus == 481)
+                {
+                   EmailError = "faekfmael";
+                }
+
+                if(API.currentStatus == 482)
+                {
+                    passwordError = "fekamfol";
+                }
+            }
+           
         });
     }else{
         renderSite();
@@ -545,30 +562,8 @@ function renderConfirmationRetraitDeCompte() {
         API.unsubscribeAccount(loggedUser.Id);
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
-<<<<<<< Updated upstream
         API.logout();
         connected = false;
-=======
-        let result = API.login(profil.Email, profil.Password);
-        if( result == undefined)
-        {
-            eraseContent();
-
-            if(API.currentStatus == 481)
-            {
-                EmailError = "courriel introuvable";
-            }
-            else if(API.currentStatus  == 482)
-            {
-                passwordError = "mot de passe incorrect";
-            }
-           
-           renderLoginForm();
-
-        }
- 
-    
->>>>>>> Stashed changes
     });
 }
 
