@@ -13,7 +13,7 @@ if (loggedUser == undefined || loggedUser === null) {
     loggedUser = {};
     loggedUser.Id = 0;
     Email = "";
-    loginMessage = "login puceau";
+    //loginMessage = "login puceau";
     EmailError = "Vous devez mettre un email";
     passwordError = "Vous devez mettre un password";
 }
@@ -21,7 +21,7 @@ else
 {
     Email = "";
     EmailError = "connecter";
-    passwordError = "ton password est retard";
+    passwordError = "Vous devez mettre un password";
     connected = true;
 }
 
@@ -545,8 +545,30 @@ function renderConfirmationRetraitDeCompte() {
         API.unsubscribeAccount(loggedUser.Id);
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
+<<<<<<< Updated upstream
         API.logout();
         connected = false;
+=======
+        let result = API.login(profil.Email, profil.Password);
+        if( result == undefined)
+        {
+            eraseContent();
+
+            if(API.currentStatus == 481)
+            {
+                EmailError = "courriel introuvable";
+            }
+            else if(API.currentStatus  == 482)
+            {
+                passwordError = "mot de passe incorrect";
+            }
+           
+           renderLoginForm();
+
+        }
+ 
+    
+>>>>>>> Stashed changes
     });
 }
 
