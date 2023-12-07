@@ -13,7 +13,7 @@ if (loggedUser == undefined || loggedUser === null) {
     loggedUser = {};
     loggedUser.Id = 0;
     Email = "";
-    //loginMessage = "login puceau";
+    
     EmailError = "Vous devez mettre un email";
     passwordError = "Vous devez mettre un password";
 }
