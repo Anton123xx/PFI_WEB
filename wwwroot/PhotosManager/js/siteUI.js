@@ -1,4 +1,4 @@
-//import validation from '.validation';
+
 
 
 let loggedUser = JSON.parse(sessionStorage.getItem("user"));
@@ -8,20 +8,21 @@ let connected = false;/////
 let isAdmin = false;/////
 
 console.log(loggedUser);
-
+EmailError = "";
+passwordError = "";
 if (loggedUser == undefined || loggedUser === null) {
     loggedUser = {};
     loggedUser.Id = 0;
     Email = "";
     
-    EmailError = "Vous devez mettre un email";
-    passwordError = "Vous devez mettre un password";
+    //EmailError = "Vous devez mettre un email";
+    //passwordError = "Vous devez mettre un password";
 }
 else
 {
     Email = "";
-    EmailError = "connecter";
-    passwordError = "Vous devez mettre un password";
+    //EmailError = "connecter";
+    //passwordError = "Vous devez mettre un password";
     connected = true;
 }
 
@@ -503,30 +504,34 @@ function renderLoginForm() {
         // ajouter le mécanisme de vérification de doublon de courriel
         addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
         // call back la soumission du formulaire
-        $('#loginForm').on("submit", function (event) {
+        $('#loginForm').on("submit", async function (event) {
             let profil = getFormData($('#loginForm'));
             event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
             showWaitingGif();
-            let result = API.login(profil.Email,profil.Password)
-            if( result != null)
+            let result = await API.login(profil.Email,profil.Password);
+            console.log(result);
+            if(result)
             {
                 
                 connected = true;
             } 
             else
             {
+
+                //console.log("rentre ds le else");
                 if(API.currentStatus == 481)
                 {
-                   EmailError = "faekfmael";
+                   EmailError = "courriel introuvable";
                    renderLoginForm();
                 }
 
                 if(API.currentStatus == 482)
                 {
-                    passwordError = "fekamfol";
+                    passwordError = "mot de passe incorrect";
                     renderLoginForm();
                 }
 
+              
                 
             }
            

@@ -80,7 +80,7 @@ class API {
             });
         });
     }
-    static login(Email, Password) {
+    static async login(Email, Password) {
         API.initHttpState();
         return new Promise(resolve => {
             $.ajax({
