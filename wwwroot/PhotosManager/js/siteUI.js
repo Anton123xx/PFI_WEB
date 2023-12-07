@@ -344,6 +344,8 @@ waitingImage="images/Loading_icon.gif">
         delete profil.matchedEmail;
         event.preventDefault();// empêcher le fureteur de soumettre une requête de soumission
         showWaitingGif(); // afficher GIF d’attente
+
+        
         API.register(profil); // commander la création au service API
     });
 }

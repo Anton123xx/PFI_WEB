@@ -69,6 +69,12 @@ class API {
     }
     static register(profil) {
         API.initHttpState();
+
+
+        if(profil.Avatar === ""){
+            profil.Avatar = "no-avatar.png";
+        }
+        
         return new Promise(resolve => {
             $.ajax({
                 url: serverHost + "/accounts/register",
@@ -79,6 +85,7 @@ class API {
                 error: xhr => { API.setHttpErrorState(xhr); resolve(false); }
             });
         });
+        
     }
     static async login(Email, Password) {
         API.initHttpState();
@@ -92,8 +99,12 @@ class API {
                     API.storeAccessToken(token.Access_token);
                     API.storeLoggedUser(token.User);
                     resolve(token.User);
+                    
                 },
-                error: xhr => { API.setHttpErrorState(xhr); resolve(false); }
+                error: xhr => { 
+                API.setHttpErrorState(xhr); resolve(false); 
+                
+                }
             });
         });
     }
@@ -115,6 +126,12 @@ class API {
     }
     static modifyUserProfil(profil) {
         API.initHttpState();
+
+        if(profil.Avatar === ""){
+            profil.Avatar = "no-avatar.png";
+        }
+        console.log(JSON.stringify(profil));
+        
         return new Promise(resolve => {
             $.ajax({
                 url: serverHost + "/Accounts/modify/" + profil.Id,
@@ -131,6 +148,7 @@ class API {
                 
             });
         });
+        
     }
     static unsubscribeAccount(userId) {
         API.initHttpState();
